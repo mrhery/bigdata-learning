@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Oct 11 17:01:23 2018
-
 @author: mrhery
 """
 import csv
@@ -14,7 +13,7 @@ datas = []
 pdata = []
 
 def recursive(sets, total, index = 0, data = []):
-    if(len(sets) > 0 and total != index):
+    if(len(sets) > 0 and (total != index)):
         for a in sets[index]:
             loop = total - 1
             void = []
@@ -22,20 +21,22 @@ def recursive(sets, total, index = 0, data = []):
             if(index > 0):
                 for ix in range(index):
                     void += sets[ix]
-            
+            loop = loop + 1
             for i in range(loop):
-                try:
-                    set = sets[index + i]
-                    for b in set:
-                        m = a + "," + b
-                        if((m not in data) and (a != b) and (b not in sets[index]) and (b not in void)):
-                            data.append(m)
-                except:
-                    pass
+                if(i > 0):
+                    try:
+                        for b in sets[index + i]:
+                            m = a + "," + b
+                            
+                            if((a != b) and (b not in void) and (m not in data) and (b not in sets[index])):
+                                void.append(b)
+                                data.append(m)
+                    except:
+                        pass
         index += 1
         return recursive(sets, total, index, data)
     else:
-        return data
+        return (data)
 
 with open(filename, newline='') as csvfile:
     spamreader = csv.reader(csvfile, quotechar='|')
@@ -47,26 +48,28 @@ with open(filename, newline='') as csvfile:
             datas.append(data)
             subjects.append(row[0])
         n += 1
-    subjects = set(subjects)
+    subjects = list(set(subjects))
+    subjects.sort()
+    
     for sub in subjects:
-        idates = []
-        tdate = []
-        
-        for data in datas:
-            if (data[0] == sub):
-                if(data[3] not in idates):
-                    idates.append(data[3])
-                
-        for idate in idates:
-            item = []
+        if(sub != "0"):
+            idates = []
+            tdate = []
+            
             for data in datas:
-                if(data[0] == sub and data[3] == idate ):
-                    item.append(data[1])
-                
-            if(item not in tdate):
-                 tdate.append(item)
-                 
-        pdata += recursive(tdate, len(tdate))
+                if (data[0] == sub):
+                    if(data[3] not in idates):
+                        idates.append(data[3])
+                    
+            for idate in idates:
+                item = []
+                for data in datas:
+                    if(data[0] == sub and data[3] == idate ):
+                        item.append(data[1])
+                    
+                if(item not in tdate):
+                     tdate.append(item)
+            pdata += recursive(tdate, len(tdate), 0, [])
         
     a = (collections.Counter(numpy.array(pdata)))
     final = (a.most_common())
@@ -76,6 +79,6 @@ with open(filename, newline='') as csvfile:
         word = dt[0].split(',')
         words = word[0] + "," + word[1] + "," + str(dt[1]) + "\n"
         string = string + words
-    
+    print(string);
     f = open("output.csv", "w")
-    f.write(string);
+    f.write(string)
